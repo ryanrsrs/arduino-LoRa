@@ -3,6 +3,11 @@
 
 #include <LoRa.h>
 
+extern "C" {
+void attach_radio_interrupt(void (*)());
+void detach_radio_interrupt();
+}
+
 // registers
 #define REG_FIFO                 0x00
 #define REG_OP_MODE              0x01
@@ -368,13 +373,15 @@ void LoRaClass::onReceive(void(*callback)(int))
   _onReceive = callback;
 
   if (callback) {
-    pinMode(_dio0, INPUT);
+    //pinMode(_dio0, INPUT);
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
     SPI.usingInterrupt(digitalPinToInterrupt(_dio0));
 #endif
-    attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+    //attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+    attach_radio_interrupt(LoRaClass::onDio0Rise);
   } else {
-    detachInterrupt(digitalPinToInterrupt(_dio0));
+    //detachInterrupt(digitalPinToInterrupt(_dio0));
+    detach_radio_interrupt();
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
     SPI.notUsingInterrupt(digitalPinToInterrupt(_dio0));
 #endif
@@ -390,9 +397,11 @@ void LoRaClass::onCadDone(void(*callback)(boolean))
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
     SPI.usingInterrupt(digitalPinToInterrupt(_dio0));
 #endif
-    attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+    //attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+    attach_radio_interrupt(LoRaClass::onDio0Rise);
   } else {
-    detachInterrupt(digitalPinToInterrupt(_dio0));
+    //detachInterrupt(digitalPinToInterrupt(_dio0));
+    detach_radio_interrupt();
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
     SPI.notUsingInterrupt(digitalPinToInterrupt(_dio0));
 #endif
@@ -408,9 +417,11 @@ void LoRaClass::onTxDone(void(*callback)())
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
     SPI.usingInterrupt(digitalPinToInterrupt(_dio0));
 #endif
-    attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+    //attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+    attach_radio_interrupt(LoRaClass::onDio0Rise);
   } else {
-    detachInterrupt(digitalPinToInterrupt(_dio0));
+    //detachInterrupt(digitalPinToInterrupt(_dio0));
+    detach_radio_interrupt();
 #ifdef SPI_HAS_NOTUSINGINTERRUPT
     SPI.notUsingInterrupt(digitalPinToInterrupt(_dio0));
 #endif
@@ -431,6 +442,22 @@ void LoRaClass::receive(int size)
   }
 
   writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_RX_CONTINUOUS);
+}
+
+void LoRaClass::receive_single(int size)
+{
+
+  writeRegister(REG_DIO_MAPPING_1, 0x00); // DIO0 => RXDONE
+
+  if (size > 0) {
+    implicitHeaderMode();
+
+    writeRegister(REG_PAYLOAD_LENGTH, size & 0xff);
+  } else {
+    explicitHeaderMode();
+  }
+
+  writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_RX_SINGLE);
 }
 
 void LoRaClass::channelActivityDetection(void)
