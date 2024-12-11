@@ -44,6 +44,7 @@ public:
   int packetRssi();
   float packetSnr();
   long packetFrequencyError();
+  float packetFrequencyErrorPPM();
 
   int rssi();
 
@@ -71,6 +72,7 @@ public:
 
   void setTxPower(int level, int outputPin = PA_OUTPUT_PA_BOOST_PIN);
   void setFrequency(long frequency);
+  void setDataRateOffset(int8_t offset);
   void setSpreadingFactor(int sf);
   void setSignalBandwidth(long sbw);
   void setCodingRate4(int denominator);

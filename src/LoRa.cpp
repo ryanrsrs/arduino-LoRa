@@ -299,6 +299,11 @@ long LoRaClass::packetFrequencyError()
   return static_cast<long>(fError);
 }
 
+float LoRaClass::packetFrequencyErrorPPM()
+{
+    return packetFrequencyError() * 1e6f / _frequency;
+}
+
 int LoRaClass::rssi()
 {
   return (readRegister(REG_RSSI_VALUE) - (_frequency < RF_MID_BAND_THRESHOLD ? RSSI_OFFSET_LF_PORT : RSSI_OFFSET_HF_PORT));
@@ -523,6 +528,11 @@ void LoRaClass::setFrequency(long frequency)
   writeRegister(REG_FRF_MSB, (uint8_t)(frf >> 16));
   writeRegister(REG_FRF_MID, (uint8_t)(frf >> 8));
   writeRegister(REG_FRF_LSB, (uint8_t)(frf >> 0));
+}
+
+void LoRaClass::setDataRateOffset(int8_t offset)
+{
+  writeRegister(0x27, offset);
 }
 
 int LoRaClass::getSpreadingFactor()
