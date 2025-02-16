@@ -84,7 +84,11 @@ public:
   void disableInvertIQ();
   void enableLowDataRateOptimize();
   void disableLowDataRateOptimize();
-  
+
+  void setHopPeriod(uint8_t hop_period);
+  uint8_t currentHop();
+  void clearHopIRQ();
+
   void setOCP(uint8_t mA); // Over Current Protection control
   
   void setGain(uint8_t gain); // Set LNA gain

@@ -26,11 +26,13 @@ void detach_radio_interrupt();
 #define REG_PKT_SNR_VALUE        0x19
 #define REG_PKT_RSSI_VALUE       0x1a
 #define REG_RSSI_VALUE           0x1b
+#define REG_HOP_CHANNEL          0x1c
 #define REG_MODEM_CONFIG_1       0x1d
 #define REG_MODEM_CONFIG_2       0x1e
 #define REG_PREAMBLE_MSB         0x20
 #define REG_PREAMBLE_LSB         0x21
 #define REG_PAYLOAD_LENGTH       0x22
+#define REG_HOP_PERIOD           0x24
 #define REG_MODEM_CONFIG_3       0x26
 #define REG_FREQ_ERROR_MSB       0x28
 #define REG_FREQ_ERROR_MID       0x29
@@ -62,6 +64,7 @@ void detach_radio_interrupt();
 #define IRQ_PAYLOAD_CRC_ERROR_MASK 0x20
 #define IRQ_RX_DONE_MASK           0x40
 #define IRQ_CAD_DONE_MASK          0x04
+#define IRQ_FHSS_HOP               0x02
 #define IRQ_CAD_DETECTED_MASK      0x01
 
 #define RF_MID_BAND_THRESHOLD    525E6
@@ -684,6 +687,22 @@ void LoRaClass::enableLowDataRateOptimize()
 void LoRaClass::disableLowDataRateOptimize()
 {
    setLdoFlagForced(false);
+}
+
+void LoRaClass::setHopPeriod(uint8_t hop_period)
+{
+  writeRegister(REG_HOP_PERIOD, hop_period);
+}
+
+uint8_t LoRaClass::currentHop()
+{
+    uint8_t hop = readRegister(REG_HOP_CHANNEL);
+    return hop & 0x3f;
+}
+
+void LoRaClass::clearHopIRQ()
+{
+  writeRegister(REG_IRQ_FLAGS, IRQ_FHSS_HOP);
 }
 
 void LoRaClass::setOCP(uint8_t mA)
